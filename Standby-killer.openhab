@@ -1,9 +1,9 @@
 //Openhab3 items, rules and sitemaps data
 //Items file
-Switch Switch10 		"Switch 10 standby killer" 			<poweroutlet_eu>	(gSwitch)		{channel="mqtt:topic:mosquitto:Switch10:Relay", ga="Outlet"}
-Switch Switch10_state 	"Switch 10 standby killer" 			<poweroutlet_eu>	(gSwitchState)	{channel="mqtt:topic:mosquitto:Switch10:RelayState"}
-Number Switch10powerW 	"Switch 10 power [%.1f] W" 			<energy> 							{channel="mqtt:topic:mosquitto:Switch10:PowerW"}
-Number Switch10kWh 		"Switch 10 energy (kWh) [%.2f] kWh" <energy>  							{channel="mqtt:topic:mosquitto:Switch10:kWh"}
+Switch Switch10 	"Switch 10 standby killer" 		<poweroutlet_eu>	(gSwitch)	{channel="mqtt:topic:mosquitto:Switch10:Relay", ga="Outlet"}
+Switch Switch10_state 	"Switch 10 standby killer" 		<poweroutlet_eu>	(gSwitchState)	{channel="mqtt:topic:mosquitto:Switch10:RelayState"}
+Number Switch10powerW 	"Switch 10 power [%.1f] W" 		<energy> 				{channel="mqtt:topic:mosquitto:Switch10:PowerW"}
+Number Switch10kWh 	"Switch 10 energy (kWh) [%.2f] kWh" 	<energy>  				{channel="mqtt:topic:mosquitto:Switch10:kWh"}
 
 //Rules file
 var Number power_threshold = 2		//kill power at power below 2 watt
