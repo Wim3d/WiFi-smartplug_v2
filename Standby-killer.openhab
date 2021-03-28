@@ -1,0 +1,55 @@
+//Openhab3 items, rules and sitemaps data
+//Items file
+Switch Switch10 		"Switch 10 standby killer" 			<poweroutlet_eu>	(gSwitch)		{channel="mqtt:topic:mosquitto:Switch10:Relay", ga="Outlet"}
+Switch Switch10_state 	"Switch 10 standby killer" 			<poweroutlet_eu>	(gSwitchState)	{channel="mqtt:topic:mosquitto:Switch10:RelayState"}
+Number Switch10powerW 	"Switch 10 power [%.1f] W" 			<energy> 							{channel="mqtt:topic:mosquitto:Switch10:PowerW"}
+Number Switch10kWh 		"Switch 10 energy (kWh) [%.2f] kWh" <energy>  							{channel="mqtt:topic:mosquitto:Switch10:kWh"}
+
+//Rules file
+var Number power_threshold = 2		//kill power at power below 2 watt
+var Number debouncetime = 5 // kill power after 5 min (battery can be charger to 100% at low power in this time)
+var Timer standbydebouncetimer1 = null
+
+rule "Switch 10 standby killer"
+when
+	Item Switch10powerW received update
+then
+	if(Switch10powerW.state<power_threshold && Switch10.state==ON && standbydebouncetimer1 === null)
+	{		
+	logInfo("Switch 10 standbykiller","Power is below threshold ({}W), turning off in {} min if power remains low", power_threshold, debouncetime) 
+	standbydebouncetimer1 = createTimer(now.plusMinutes(debouncetime)) [|
+		standbydebouncetimer1 = null
+		Switch10.sendCommand(OFF)
+		logInfo("Switch 10 standbykiller","Debounce ended, Switch 10 off")
+		]
+	}
+	if(Switch10powerW.state>power_threshold && Switch10.state==ON && standbydebouncetimer1 !== null)
+	{
+		standbydebouncetimer1.cancel()
+		standbydebouncetimer1 = null
+		logInfo("Switch 10 standbykiller","Power > threshold in debouncetime, timer cancelled")
+	}
+end
+
+rule "cancel Switch10 standby killer"
+when
+	Item Switch10 changed to OFF
+then
+	if(standbydebouncetimer1 !== null) 
+	{
+		standbydebouncetimer1.cancel()
+		standbydebouncetimer1 = null
+		logInfo("Switch 10 standbykiller","Switch10 turned off, timer cancelled")
+	}
+end
+
+//sitemap file
+sitemap switches label="Switches"
+{
+		Frame label="Switches"
+	{
+		Switch item=Switch10
+		Text item=Switch10powerW
+		Text item=Switch10kWh
+    }
+}
