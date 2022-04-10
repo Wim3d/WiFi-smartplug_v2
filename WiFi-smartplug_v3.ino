@@ -11,6 +11,7 @@
 	version 25: restart button in same URL to prevent double restart
 	version 26: skipped
 	version 27H: Sonoff POW R2 support, cleaned up and combined in power measurement
+	version 27N: Serial improvement in power reading
 */
 
 #include <ESP8266WiFi.h>
@@ -29,7 +30,7 @@ uint32_t lastReconnectAttempt = 0, lastBlink = 0;
 int resetcounter = 0;
 
 // base values
-const char* software_version = "version 27M";
+const char* software_version = "version 27N";
 const char* devicename = "SPOW_R2"; // 7 characters, then the length of the MQTT topic fits nicely
 
 // for HTTPupdate
@@ -249,8 +250,6 @@ void setup() {
   if (DEVICE == DEVICE_TYPE5)  // initialize the serial port for receiving the data from the CSE7759B power measuring chip
   {
     Serial.begin(4800);
-    Serial.println();
-    Serial.println();
   }
   Serial.println("Started from boot");
   Serial.print("MAC Address: ");
@@ -328,6 +327,13 @@ void loop() {
       measurement = true;
       client.publish(status_topic, "Relay switched on, measurement started");
       powertime = now() - (POWERSENDDELAY - MEASUREINTERVAL / 1000  - 1); // publish power after one measurement + 1 second
+
+      if (DEVICE == DEVICE_TYPE5)  // re-initialize the serial port for receiving the data from the CSE7759B power measuring chip
+      {
+        Serial.end();
+        delay(100);
+        Serial.begin(4800);
+      }
 
       //CF_pulse = false;
     }
